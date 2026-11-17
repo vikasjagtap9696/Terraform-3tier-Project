@@ -59,7 +59,7 @@ db_username = "admin"
 db_password = "replace-with-a-secret"
 ```
 
-Network CIDRs, instance sizes, scaling limits, database size, Multi-AZ behavior, and backup retention are declared in `variables.tf` with safe defaults. The default RDS class is `db.t4g.micro`, and backup retention is `0` days for AWS Free Tier compatibility.
+Network CIDRs, instance sizes, scaling limits, database size, Multi-AZ behavior, and backup retention are declared in `variables.tf` with safe defaults. The default RDS class is `db.t4g.micro`, Multi-AZ is disabled, and backup retention is `0` days for AWS Free Tier compatibility.
 
 Do not commit real passwords or other credentials. Prefer an environment variable, a secrets manager, or a separate untracked `.tfvars` file for sensitive values.
 

@@ -87,7 +87,7 @@ variable "db_name" {
 
 variable "db_multi_az" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "db_instance_class" {
