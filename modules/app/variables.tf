@@ -40,7 +40,7 @@ variable "max_size" {
   type = number
 }
 
-variable "version" {
+variable "launch_template_version" {
   type    = string
   default = "$Latest"
 }

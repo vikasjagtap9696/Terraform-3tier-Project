@@ -14,7 +14,7 @@ resource "aws_autoscaling_group" "app" {
 
   launch_template {
     id      = aws_launch_template.app.id
-    version = var.version
+    version = var.launch_template_version
   }
 
   tag {

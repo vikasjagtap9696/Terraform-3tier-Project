@@ -14,7 +14,7 @@ resource "aws_autoscaling_group" "web" {
   vpc_zone_identifier  = var.subnets
   launch_template {
     id      = aws_launch_template.web.id
-    version = var.version
+    version = var.launch_template_version
   }
   tag {
     key                 = var.name

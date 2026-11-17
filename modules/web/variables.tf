@@ -36,7 +36,7 @@ variable "subnets" {
   type = list(string)
 }
 
-variable "version" {
+variable "launch_template_version" {
   type    = string
   default = "$Latest"
 }
