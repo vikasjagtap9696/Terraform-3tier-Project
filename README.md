@@ -1,106 +1,365 @@
-# Terraform 3-Tier AWS Infrastructure
 
-This project provisions a modular three-tier AWS environment with Terraform:
+# 🚀 Terraform 3-Tier AWS Infrastructure
 
-- **Network:** VPC, public/private subnets, internet gateway, NAT gateway, routes, and tier-specific security groups
-- **Web tier:** Public Application Load Balancer and web Auto Scaling Group
-- **App tier:** Private Auto Scaling Group
-- **Database tier:** Private, Multi-AZ MySQL RDS instance
+Deploy a scalable, secure, and modular **3-Tier AWS Infrastructure** using Terraform, AWS EC2, Auto Scaling Groups, Application Load Balancer, VPC, NAT Gateway, and Amazon RDS MySQL.
 
-## Architecture
+## 🏗️ Architecture Diagram
 
-```text
-Internet
-   |
-Public Application Load Balancer
-   |
-Web Auto Scaling Group (public subnets)
-   |
-App Auto Scaling Group (private subnets)
-   |
-MySQL RDS (private subnets)
+```mermaid
+flowchart TB
+    USER([Internet Users])
+    IGW[Internet Gateway]
+
+    subgraph AWS["AWS Cloud"]
+        subgraph VPC["Custom VPC"]
+            subgraph PUBLIC["Public Subnets - Multi AZ"]
+                ALB[Public Application Load Balancer]
+                WEB[Web Tier - Auto Scaling Group]
+                NAT[NAT Gateway]
+            end
+
+            subgraph PRIVATE["Private Subnets - Multi AZ"]
+                APP[Application Tier - Auto Scaling Group]
+                DB[(Amazon RDS MySQL)]
+            end
+
+            IGW --> ALB
+            ALB --> WEB
+            WEB --> APP
+            APP --> DB
+            APP -.-> NAT
+            NAT -.-> IGW
+        end
+    end
+
+    USER --> IGW
 ```
 
-Public subnets use an internet gateway route. Private subnets use a NAT gateway
-for outbound package downloads without being directly internet accessible.
+> **Note:** This is a logical architecture diagram. Actual web-to-app connectivity must be configured through application endpoints, such as an internal load balancer. The NAT Gateway provides outbound connectivity for private subnets.
 
-The modules are organized as follows:
+## 📌 Project Overview
+
+This project provisions AWS infrastructure using reusable Terraform modules.
+
+### Key Features
+
+- Custom AWS VPC
+- Public and Private Subnets
+- Internet Gateway
+- NAT Gateway
+- Public Application Load Balancer
+- Web Tier Auto Scaling Group
+- Application Tier Auto Scaling Group
+- Private Amazon RDS MySQL Database
+- Security Groups for each tier
+- S3 Remote Terraform State Backend
+- Modular Terraform Architecture
+
+## 📂 Project Directory Structure
 
 ```text
-.
+Terraform-3-Tier-AWS/
+│
 ├── backend.tf
 ├── main.tf
-├── outputs.tf
 ├── variables.tf
 ├── terraform.tfvars
-└── modules
-    ├── app
-    ├── db
-    ├── network
-    └── web
+├── outputs.tf
+├── README.md
+│
+└── modules/
+    ├── network/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    │
+    ├── web/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    │
+    ├── app/
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    │
+    └── db/
+        ├── main.tf
+        ├── variables.tf
+        └── outputs.tf
 ```
 
-## Prerequisites
+## 🛠️ Technologies Used
 
-- Terraform `>= 1.5.0`
-- AWS CLI configured with credentials that can create the required VPC, EC2, ELB, and RDS resources
-- An existing S3 bucket for the remote state backend
-- AMI IDs available in the selected AWS region
+| Technology | Purpose |
+|------------|---------|
+| Terraform | Infrastructure as Code |
+| AWS VPC | Network Isolation |
+| AWS EC2 | Compute Instances |
+| AWS ALB | Load Balancing |
+| AWS ASG | Automatic Scaling |
+| AWS RDS | MySQL Database |
+| AWS S3 | Remote State Storage |
+| AWS IAM | Access Management |
+| AWS NAT Gateway | Private Subnet Outbound Access |
+| GitHub | Version Control |
 
-## Configuration
+## ⚙️ Prerequisites
 
-Edit `terraform.tfvars` before applying. The required values are:
+Before deploying, install and configure:
+
+- Terraform >= 1.5.0
+- AWS CLI
+- AWS Account
+- Git
+- VS Code
+- Existing S3 Bucket for Terraform State
+- Valid AMI IDs in the selected AWS Region
+
+Configure AWS CLI:
+
+```bash
+aws configure
+```
+
+Verify AWS credentials:
+
+```bash
+aws sts get-caller-identity
+```
+
+## 🔧 Terraform Configuration
+
+Update the `terraform.tfvars` file:
 
 ```hcl
-aws_region  = "ap-south-1"
-web_ami_id  = "ami-xxxxxxxxxxxxxxxxx"
-app_ami_id  = "ami-xxxxxxxxxxxxxxxxx"
+aws_region = "ap-south-1"
+
+web_ami_id = "ami-xxxxxxxxxxxxxxxxx"
+
+app_ami_id = "ami-xxxxxxxxxxxxxxxxx"
+
 db_username = "admin"
-db_password = "replace-with-a-secret"
 ```
 
-Network CIDRs, instance sizes, scaling limits, database size, Multi-AZ behavior, and backup retention are declared in `variables.tf` with safe defaults. The default RDS class is `db.t4g.micro`, Multi-AZ is disabled, and backup retention is `0` days for AWS Free Tier compatibility. The MySQL engine version defaults to `null` so RDS can select a version supported in the selected region.
+Provide the database password securely, for example:
 
-Do not commit real passwords or other credentials. Prefer an environment variable, a secrets manager, or a separate untracked `.tfvars` file for sensitive values.
+```bash
+export TF_VAR_db_password="YOUR_SECURE_PASSWORD"
+```
 
-## Usage
+Avoid committing passwords, AWS credentials, or Terraform state files to GitHub.
 
-Initialize the providers and backend:
+## 🚀 Deployment Steps
 
-```powershell
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/Terraform-3-Tier-AWS.git
+
+cd Terraform-3-Tier-AWS
+```
+
+### Step 2: Initialize Terraform
+
+```bash
 terraform init
 ```
 
-Format and validate the configuration:
+### Step 3: Format Terraform Files
 
-```powershell
+```bash
 terraform fmt -recursive
+```
+
+### Step 4: Validate Configuration
+
+```bash
 terraform validate
 ```
 
-Review the execution plan:
+### Step 5: Review Terraform Plan
 
-```powershell
+```bash
 terraform plan -var-file="terraform.tfvars"
 ```
 
-Apply the infrastructure:
+### Step 6: Deploy Infrastructure
 
-```powershell
+```bash
 terraform apply -var-file="terraform.tfvars"
 ```
 
-Destroy the infrastructure when it is no longer needed:
+Type `yes` when prompted.
 
-```powershell
+## 🔍 Verify Infrastructure
+
+Check Terraform-managed resources:
+
+```bash
+terraform state list
+```
+
+Display Terraform outputs:
+
+```bash
+terraform output
+```
+
+Check the ALB DNS name:
+
+```bash
+terraform output web_alb_dns
+```
+
+Check the RDS endpoint:
+
+```bash
+terraform output db_endpoint
+```
+
+## 🔐 Security Architecture
+
+### Web Tier
+
+- Public-facing Application Load Balancer
+- HTTP/HTTPS access through ALB
+- Web EC2 security group restricted to required traffic
+
+### Application Tier
+
+- EC2 instances deployed in private subnets
+- No direct inbound internet access
+- Application access restricted to the Web Tier
+
+### Database Tier
+
+- MySQL RDS deployed in private subnets
+- Database is not publicly accessible
+- Port 3306 access restricted to the Application Tier
+- Database credentials handled securely
+
+## 📈 Auto Scaling
+
+The Web and Application tiers use AWS Auto Scaling Groups.
+
+Benefits:
+
+- Improved Availability
+- Automatic Instance Replacement
+- Horizontal Scaling
+- Better Traffic Handling
+- Multi-AZ Deployment Support
+
+Scaling policies and instance refresh behavior depend on the Terraform module configuration.
+
+## 🗄️ Amazon RDS MySQL
+
+Database features:
+
+- MySQL Database Engine
+- Private Database Subnets
+- Database Security Group
+- Configurable Instance Type
+- Configurable Backup Retention
+- Optional Multi-AZ Deployment
+
+Default configuration:
+
+```hcl
+db_instance_class    = "db.t4g.micro"
+db_multi_az          = false
+db_backup_retention  = 0
+```
+
+> Multi-AZ is disabled by default. Enable it when high availability is required. AWS resources may incur charges even with these defaults.
+
+## ☁️ Terraform Remote State
+
+Terraform state is stored in an existing Amazon S3 bucket.
+
+Example `backend.tf`:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket       = "YOUR-EXISTING-STATE-BUCKET"
+    key          = "three-tier/terraform.tfstate"
+    region       = "ap-south-1"
+    encrypt      = true
+    use_lockfile = true
+  }
+}
+```
+
+Create the bucket before initializing Terraform.
+
+Ensure the IAM identity has the required S3 permissions.
+
+Do not manage the same infrastructure using multiple independent Terraform state files.
+
+## 🧹 Destroy Infrastructure
+
+To delete resources managed by this Terraform configuration:
+
+```bash
+terraform plan -destroy -var-file="terraform.tfvars"
+```
+
+Review the resources carefully.
+
+Then execute:
+
+```bash
 terraform destroy -var-file="terraform.tfvars"
 ```
 
-## Outputs
+Type `yes` to confirm.
 
-- `web_alb_dns`: DNS name of the public Application Load Balancer
-- `db_endpoint`: RDS database endpoint
+> Warning: Destroying the infrastructure may permanently delete database resources and data. Back up important data before proceeding.
 
-## State backend
+## 📌 Terraform Commands Reference
 
-The S3 backend configuration is in `backend.tf`. The configured bucket must already exist and the AWS identity running Terraform must have access to the bucket and state key. Backend configuration cannot use normal Terraform input variables, so update the bucket, key, and region directly in `backend.tf` when deploying to another environment.
+| Command | Description |
+|---------|-------------|
+| terraform init | Initialize Terraform |
+| terraform fmt | Format Terraform Code |
+| terraform validate | Validate Configuration |
+| terraform plan | Preview Infrastructure Changes |
+| terraform apply | Create or Update Infrastructure |
+| terraform output | Display Outputs |
+| terraform state list | List Managed Resources |
+| terraform destroy | Destroy Managed Infrastructure |
+
+## 🛡️ Best Practices
+
+- Use Terraform Modules
+- Store State Remotely
+- Enable State Locking
+- Use IAM Least Privilege
+- Keep Databases Private
+- Use Security Groups
+- Use Multiple Availability Zones
+- Protect Sensitive Variables
+- Enable Monitoring and Logging
+- Review Terraform Plans Before Applying
+- Monitor AWS Costs
+
+## 👨‍💻 Author
+
+**Vikas Jagtap**
+
+Cloud & DevOps Engineer
+
+**Skills:**
+AWS | Terraform | Linux | Docker | Kubernetes | Jenkins | Ansible | Git | GitHub | CI/CD
+
+GitHub: https://github.com/vikasjagtap9696
+
+## ⭐ Support
+
+If you find this project useful, consider giving the repository a star!
+
+---
+
+**Built with Terraform and AWS**
