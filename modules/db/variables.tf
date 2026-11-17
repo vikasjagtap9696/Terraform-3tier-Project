@@ -69,7 +69,7 @@ variable "publicly_accessible" {
 
 variable "backup_retention_period" {
   type    = number
-  default = 7
+  default = 0
 }
 
 variable "deletion_protection" {
