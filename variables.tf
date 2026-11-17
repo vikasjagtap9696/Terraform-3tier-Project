@@ -92,5 +92,5 @@ variable "db_multi_az" {
 
 variable "db_instance_class" {
   type    = string
-  default = "db.t3.micro"
+  default = "db.t4g.micro"
 }
