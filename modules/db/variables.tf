@@ -27,8 +27,9 @@ variable "engine" {
 }
 
 variable "engine_version" {
-  type    = string
-  default = "8.0.43"
+  type     = string
+  nullable = true
+  default  = null
 }
 
 variable "instance_class" {
